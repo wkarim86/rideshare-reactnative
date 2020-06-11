@@ -3,6 +3,7 @@ const initialState = {
 		userData: [],
 		location: null,
 		status: null,
+		deviceToken: null,
 	},
 };
 

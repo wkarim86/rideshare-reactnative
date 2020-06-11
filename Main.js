@@ -6,6 +6,7 @@ import HomeScreen from "./HomeScreen";
 import LoginScreen from "./LoginScreen";
 import SignupScreen from "./SignupScreen";
 import AllRides from "./AllRides";
+import LocationPick from "./LocationPick";
 const Stack = createStackNavigator();
 
 export default function Main() {
@@ -53,6 +54,13 @@ export default function Main() {
 					component={AllRides}
 					options={{
 						title: "Find Ride",
+					}}
+				/>
+				<Stack.Screen
+					name="RidePick"
+					component={LocationPick}
+					options={{
+						title: "Where to go?",
 					}}
 				/>
 			</Stack.Navigator>

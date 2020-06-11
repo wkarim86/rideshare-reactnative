@@ -34,7 +34,12 @@ class SignupScreen extends Component {
 			fullName: "",
 			showDialog: false,
 			isLoading: false,
+			deviceToken: null,
 		};
+	}
+
+	componentDidMount() {
+		console.log("Signup", this.props);
 	}
 
 	_toggleDialog = () => {
@@ -48,6 +53,7 @@ class SignupScreen extends Component {
 		formData.append("password", data.password);
 		formData.append("email", data.email);
 		formData.append("fullName", data.fullName);
+		formData.append("deviceToken", this.props.user.deviceToken);
 
 		this.setState({ isLoading: true });
 		fetch(`${API_URL}user/create`, {
@@ -172,4 +178,10 @@ const mapDispatchToProps = (dispatch) => {
 	};
 };
 
-export default connect(null, mapDispatchToProps)(SignupScreen);
+const mapStateToProps = (state) => {
+	return {
+		user: state.user,
+	};
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignupScreen);

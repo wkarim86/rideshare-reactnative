@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "768774108826",
+    "firebase_url": "https://rideshare-5b8f9.firebaseio.com",
+    "project_id": "rideshare-5b8f9",
+    "storage_bucket": "rideshare-5b8f9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768774108826:android:b1bd2ff1197562170ed123",
+        "android_client_info": {
+          "package_name": "vu.edu.rideshare.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "768774108826-em3idvr3b7s3522rjfn4hefog8o98bai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzNUN8YmlKZp8SPYBtSDs4vLOqLRFc-pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "768774108826-em3idvr3b7s3522rjfn4hefog8o98bai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

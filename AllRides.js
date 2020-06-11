@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Dimensions } from "react-native";
 import {
 	Paragraph,
 	DataTable,
@@ -8,7 +8,8 @@ import {
 } from "react-native-paper";
 import Constants from "expo-constants";
 import { API_URL } from "./Constants";
-import MapView from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
+import { connect } from "react-redux";
 
 class AllRides extends Component {
 	constructor(props) {
@@ -21,8 +22,10 @@ class AllRides extends Component {
 
 	render() {
 		const { isLoading } = this.state;
+		const { latitude, longitude } = this.props.user.location;
+
 		return (
-			<View style={styles.container}>
+			<View>
 				{isLoading && (
 					<ActivityIndicator
 						animating={true}
@@ -36,15 +39,18 @@ class AllRides extends Component {
 				)}
 				{!isLoading && (
 					<Fragment>
-						<MapView
-							initialRegion={{
-								latitude: 37.78825,
-								longitude: -122.4324,
-								latitudeDelta: 0.0922,
-								longitudeDelta: 0.0421,
-							}}
-						/>
-						<DataTable>
+						<View style={StyleSheet.absoluteFillObject}>
+							<MapView
+								style={styles.mapStyle}
+								initialRegion={{
+									latitude: parseFloat(latitude),
+									longitude: parseFloat(longitude),
+									latitudeDelta: 0.01,
+									longitudeDelta: 0.01,
+								}}
+							/>
+						</View>
+						{/* <DataTable>
 							{this.state.data.map((value, index) => {
 								return (
 									<DataTable.Row key={index}>
@@ -53,7 +59,7 @@ class AllRides extends Component {
 									</DataTable.Row>
 								);
 							})}
-						</DataTable>
+						</DataTable> */}
 					</Fragment>
 				)}
 			</View>
@@ -70,7 +76,6 @@ class AllRides extends Component {
 			});
 	};
 }
-
 const styles = StyleSheet.create({
 	container: {
 		paddingTop: Constants.statusBarHeight,
@@ -82,12 +87,28 @@ const styles = StyleSheet.create({
 		backgroundColor: "#FFF",
 		height: "100%",
 	},
-	inputText: {
-		marginTop: 20,
-	},
 	buttonStyle: {
 		marginTop: 20,
 	},
+	mapStyle: {
+		alignSelf: "stretch",
+		height: Dimensions.get("window").height,
+		...StyleSheet.absoluteFillObject,
+	},
+	callout: {
+		padding: 20,
+		position: "absolute",
+		bottom: 40,
+		alignSelf: "center",
+		backgroundColor: "rgba(255,255,255,0.8)",
+		borderRadius: 60,
+		width: Dimensions.get("window").width - 80,
+	},
 });
 
-export default AllRides;
+const mapStateToProps = (state) => {
+	return {
+		user: state.user,
+	};
+};
+export default connect(mapStateToProps)(AllRides);

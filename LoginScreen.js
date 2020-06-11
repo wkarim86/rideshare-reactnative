@@ -18,8 +18,16 @@ import {
 } from "react-native-paper";
 import Constants from "expo-constants";
 import { API_URL } from "./Constants";
-import { doLogin } from "./redux/actions";
+import {
+	doLogin,
+	updateUserLocation,
+	updateDeviceToken,
+} from "./redux/actions";
 import { connect } from "react-redux";
+import { Notifications } from "expo";
+import * as Permissions from "expo-permissions";
+import * as Location from "expo-location";
+
 YellowBox.ignoreWarnings(["Require cycle:"]);
 
 class LoginScreen extends Component {
@@ -32,6 +40,36 @@ class LoginScreen extends Component {
 			isLoading: false,
 		};
 	}
+
+	componentDidMount() {
+		this.getDeviceToken()
+			.then((token) => {
+				console.log("token", token);
+				if (token !== null) {
+					this.props.updateDeviceToken(token);
+				}
+			})
+			.catch((err) => console.error(err));
+
+		//get user current location
+		this.__getUserCurrentLocation((location) => {
+			console.log("Location", location);
+			this.props.updateLocation({
+				latitude: location.coords.latitude,
+				longitude: location.coords.longitude,
+			});
+		});
+	}
+
+	getDeviceToken = async () => {
+		let token = null;
+		if (Constants.isDevice) {
+			token = await Notifications.getExpoPushTokenAsync();
+		} else {
+			return null;
+		}
+		return token;
+	};
 
 	_toggleDialog = () => {
 		this.setState({ showDialog: !this.state.showDialog });
@@ -61,7 +99,6 @@ class LoginScreen extends Component {
 					]);
 				} else {
 					//storing user data
-
 					AsyncStorage.setItem("isLoggedIn", "true").then(() => {
 						this.props.actionLogin(data);
 						this.props.navigation.replace("Home");
@@ -73,6 +110,18 @@ class LoginScreen extends Component {
 				this.setState({ isLoading: false });
 				console.error(error);
 			});
+	};
+
+	__getUserCurrentLocation = (callback) => {
+		(async () => {
+			let { status } = await Location.requestPermissionsAsync();
+			if (status !== "granted") {
+				setErrorMsg("Permission to access location was denied");
+			}
+
+			let location = await Location.getCurrentPositionAsync({});
+			callback(location);
+		})();
 	};
 
 	render() {
@@ -148,6 +197,12 @@ const mapDispatchToProps = (dispatch) => {
 	return {
 		actionLogin: (payload) => {
 			dispatch(doLogin(payload));
+		},
+		updateLocation: (payload) => {
+			dispatch(updateUserLocation(payload));
+		},
+		updateDeviceToken: (payload) => {
+			dispatch(updateDeviceToken(payload));
 		},
 	};
 };

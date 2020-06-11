@@ -1,10 +1,16 @@
-import React, { Component, useLayoutEffect } from "react";
-import { StyleSheet, Text, View, AsyncStorage, Alert } from "react-native";
-import { Appbar, Button, IconButton, Colors } from "react-native-paper";
+import React, { Component, Fragment } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import {
+	Button,
+	IconButton,
+	Colors,
+	ActivityIndicator,
+} from "react-native-paper";
 import Constants from "expo-constants";
-import { API_URL, I_NEED_RIDE, I_CAN_SHARE_RIDE } from "./Constants";
-import { fetchStatus } from "./redux/actions";
+import { I_CAN_SHARE_RIDE, I_CANNOT_SHARE_RIDE } from "./Constants";
+import { fetchStatus, updateStatusAction } from "./redux/actions";
 import * as Location from "expo-location";
+import { getUserStatus, updateStatus } from "./helper";
 
 import { connect } from "react-redux";
 
@@ -22,7 +28,7 @@ class HomeScreen extends Component {
 		});
 
 		//get user status and redirect to specific screen
-		this.__getUserStatus();
+		getUserStatus({ ...this.props });
 	}
 
 	logout = () => {
@@ -31,30 +37,18 @@ class HomeScreen extends Component {
 
 	gotoFindRideScreen = () => {
 		//update user status first then navigate to find ride screen
-		this.props.navigation.navigate("FindRides");
+		this.props.navigation.navigate("RidePick");
 	};
 
-	__updateStatus = (status, callback) => {
+	/*
+	__updateStatus = (callback) => {
 		const { userData } = this.props.user;
+		const { latitude, longitude } = this.props.user.location;
 
-		this.__getUserCurrentLocation((location) => {
-			console.log("Location", location);
-			const { latitude, longitude } = location.coords;
-
-			this.__postUserStatus({
-				userId: userData.id,
-				status,
-				location: `${latitude}, ${longitude}`,
-				callback,
-			});
-		});
-	};
-
-	__postUserStatus = ({ userId, status, location, callback }) => {
 		const formData = new FormData();
-		formData.append("user_id", userId);
-		formData.append("status", status);
-		formData.append("location", location);
+		formData.append("user_id", userData.id);
+		formData.append("status", 3);
+		formData.append("location", `${latitude}, ${longitude}`);
 
 		fetch(`${API_URL}user/update/status`, {
 			method: "POST",
@@ -71,24 +65,13 @@ class HomeScreen extends Component {
 					]);
 				} else {
 					console.log("Response", data);
+
 					callback();
 				}
 			})
 			.catch((error) => {
 				console.log(error);
 			});
-	};
-
-	__getUserCurrentLocation = (callback) => {
-		(async () => {
-			let { status } = await Location.requestPermissionsAsync();
-			if (status !== "granted") {
-				setErrorMsg("Permission to access location was denied");
-			}
-
-			let location = await Location.getCurrentPositionAsync({});
-			callback(location);
-		})();
 	};
 
 	__getUserStatus = () => {
@@ -114,34 +97,44 @@ class HomeScreen extends Component {
 			})
 			.catch((err) => console.error(err));
 	};
+	*/
 
 	render() {
-		const { username } = this.props.user.userData;
+		const { username, status } = this.props.user;
+		console.log("HomeSCrene", this.props);
 		return (
-			<View style={styles.container}>
-				<Text style={styles.userName}>Hi, {username}</Text>
-				<Button
-					mode="contained"
-					onPress={() =>
-						this.__updateStatus(I_NEED_RIDE, () => {
-							this.gotoFindRideScreen();
-						})
-					}
-				>
-					I need a Ride
-				</Button>
-				<Button
-					mode="outlined"
-					style={styles.buttonStyle}
-					onPress={() =>
-						this.__updateStatus(I_CAN_SHARE_RIDE, () => {
-							console.log("Redirect me ");
-						})
-					}
-				>
-					I can share a Ride
-				</Button>
-			</View>
+			<Fragment>
+				<View style={styles.container}>
+					<Text style={styles.userName}>Hi, {username}</Text>
+					{parseInt(status) == 3 ||
+						(parseInt(status) == 2 && (
+							<Button
+								mode="contained"
+								onPress={() => {
+									this.gotoFindRideScreen();
+								}}
+							>
+								I need a Ride
+							</Button>
+						))}
+
+					<Button
+						mode="outlined"
+						style={styles.buttonStyle}
+						onPress={() =>
+							updateStatus({
+								status: status == 1 ? I_CANNOT_SHARE_RIDE : I_CAN_SHARE_RIDE,
+								...this.props,
+								callback: (data) => {
+									this.props.updateUserStatus(data);
+								},
+							})
+						}
+					>
+						{status == 1 ? "I cannot share a ride" : "I can share a ride"}
+					</Button>
+				</View>
+			</Fragment>
 		);
 	}
 }
@@ -177,6 +170,9 @@ const mapDispatchToProps = (dispatch) => {
 	return {
 		userStatusFetch: (payload) => {
 			dispatch(fetchStatus(payload));
+		},
+		updateUserStatus: (payload) => {
+			dispatch(updateStatusAction(payload));
 		},
 	};
 };
